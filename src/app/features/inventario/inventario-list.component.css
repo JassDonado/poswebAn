@@ -1,0 +1,71 @@
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.page-subtitle {
+  color: #6b6375;
+  margin: 4px 0 20px;
+  font-size: 15px;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.buscar-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #08060d;
+  margin: 0;
+}
+
+.section-title {
+  margin: 24px 0 12px;
+  font-size: 18px;
+  color: #08060d;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 2px solid #e5e4e7;
+  color: #08060d;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5e4e7;
+}
+
+.table tbody tr:hover {
+  background: rgba(170, 59, 255, 0.1);
+}
+
+.empty {
+  color: #6b6375;
+  opacity: 0.7;
+  padding: 12px 0;
+  text-align: center;
+}

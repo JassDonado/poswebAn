@@ -1,0 +1,11 @@
+<header class="topbar">
+  <a class="brand" routerLink="/mesas">POS Restaurante</a>
+  <nav aria-label="Navegación principal">
+    <a routerLink="/mesas" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Mesas</a>
+    <a routerLink="/mesas/nueva" routerLinkActive="active">Nueva mesa</a>
+  </nav>
+</header>
+
+<main class="page">
+  <router-outlet />
+</main>

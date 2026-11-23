@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { NotFoundComponent } from './shared/not-found.component';
 
 export const routes: Routes = [
   {
@@ -7,14 +8,24 @@ export const routes: Routes = [
       import('./features/mesas/mesa-list.component').then((m) => m.MesaListComponent),
   },
   {
-    path: 'mesas/nueva',
+    path: 'cocina',
     loadComponent: () =>
-      import('./features/mesas/mesa-form.component').then((m) => m.MesaFormComponent),
+      import('./features/cocina/cocina.component').then((m) => m.CocinaComponent),
   },
   {
-    path: 'mesas/detalle/:id',
+    path: 'inventario',
     loadComponent: () =>
-      import('./features/mesas/mesa-detail.component').then((m) => m.MesaDetailComponent),
+      import('./features/inventario/inventario-list.component').then((m) => m.InventarioListComponent),
+  },
+  {
+    path: 'inventario/nuevo',
+    loadComponent: () =>
+      import('./features/productos/producto-form.component').then((m) => m.ProductoFormComponent),
+  },
+  {
+    path: 'inventario/detalle/:id',
+    loadComponent: () =>
+      import('./features/productos/producto-detalle.component').then((m) => m.ProductoDetalleComponent),
   },
   {
     path: '404',

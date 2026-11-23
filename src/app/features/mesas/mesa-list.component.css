@@ -1,0 +1,41 @@
+.mesa-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.mesa-card {
+  border: 1px solid #e5e4e7;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  background: #f4f3ec;
+  transition: transform 0.15s;
+}
+
+.mesa-card:hover {
+  transform: translateY(-2px);
+}
+
+.mesa-card.mesa-ocupada {
+  border-color: rgba(170, 59, 255, 0.5);
+}
+
+.mesa-numero {
+  font-size: 20px;
+  font-weight: 700;
+  color: #08060d;
+  margin-bottom: 4px;
+}
+
+.mesa-capacidad {
+  font-size: 13px;
+  color: #6b6375;
+  margin-bottom: 12px;
+}
+
+.mesa-acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

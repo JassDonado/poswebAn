@@ -6,13 +6,28 @@ import { MesaService } from '../../core/services/mesa.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink],
   template: `
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Panel operativo</p>
+        <h1>Control de mesas</h1>
+        <p class="hero-copy">Consulta la disponibilidad del salón y registra nuevas mesas en segundos.</p>
+      </div>
+      <a class="button primary" routerLink="/mesas/nueva">+ Registrar mesa</a>
+    </section>
+
+    <section class="stats" aria-label="Resumen de mesas">
+      <div class="stat-card"><span>Total</span><strong>{{ mesas().length }}</strong></div>
+      <div class="stat-card"><span>Disponibles</span><strong>{{ disponibles() }}</strong></div>
+      <div class="stat-card"><span>En atención</span><strong>{{ ocupadas() }}</strong></div>
+    </section>
+
     <section class="card">
       <div class="section-heading">
         <div>
-          <p class="eyebrow">Operación</p>
-          <h1>Mesas del restaurante</h1>
+          <p class="eyebrow">Salón</p>
+          <h2>Mesas registradas</h2>
         </div>
-        <a class="button primary" routerLink="/mesas/nueva">Registrar mesa</a>
+        <span class="muted">Actualizado en tiempo real</span>
       </div>
 
       <div class="mesa-grid">
@@ -33,4 +48,6 @@ import { MesaService } from '../../core/services/mesa.service';
 export class MesaListComponent {
   private readonly mesaService = inject(MesaService);
   readonly mesas = computed(() => this.mesaService.mesas());
+  readonly disponibles = computed(() => this.mesas().filter((mesa) => mesa.estado === 'DISPONIBLE').length);
+  readonly ocupadas = computed(() => this.mesas().filter((mesa) => mesa.estado === 'OCUPADA').length);
 }

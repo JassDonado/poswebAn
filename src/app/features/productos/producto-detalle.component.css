@@ -1,0 +1,57 @@
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 24px #1720330b;
+}
+
+.narrow {
+  margin: auto;
+  max-width: 560px;
+}
+
+.eyebrow {
+  color: #aa3bff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin: 0 0 8px;
+}
+
+h1 {
+  margin-top: 0;
+  font-size: 1.5rem;
+  color: #08060d;
+}
+
+dl {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: 1fr 2fr;
+  margin-bottom: 1.5rem;
+}
+
+dt {
+  font-weight: 700;
+  color: #6b6375;
+}
+
+dd {
+  margin: 0;
+  color: #08060d;
+}
+
+.descripcion {
+  color: #6b6375;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+.card > a {
+  color: #aa3bff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}

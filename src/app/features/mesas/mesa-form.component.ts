@@ -3,7 +3,7 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import { MesaEstado } from '../../core/models/mesa.model';
 import { MesaService } from '../../core/services/mesa.service';
-import { uniqueMesaNumberValidator } from '../../shared/validators/unique-mesa-number.validator';
+import { validarMesaUnica } from '../../shared/validators/mesa-unica.validator';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,7 +20,7 @@ import { uniqueMesaNumberValidator } from '../../shared/validators/unique-mesa-n
           @if (form.controls.numero.hasError('minlength')) { <small>Usa al menos 3 caracteres.</small> }
           @if (form.controls.numero.hasError('maxlength')) { <small>Usa máximo 10 caracteres.</small> }
           @if (form.controls.numero.hasError('pattern')) { <small>Usa el formato M-01.</small> }
-          @if (form.controls.numero.hasError('duplicateNumber')) { <small>Ese número ya está registrado.</small> }
+          @if (form.controls.numero.hasError('mesaUnica')) { <small>Ese número ya está registrado.</small> }
         }
 
         <label for="capacidad">Capacidad</label>
@@ -55,7 +55,7 @@ export class MesaFormComponent {
         Validators.minLength(3),
         Validators.maxLength(10),
         Validators.pattern(/^M-\d{2}$/),
-        uniqueMesaNumberValidator((numero) => this.mesaService.numeroExiste(numero)),
+        validarMesaUnica((numero) => this.mesaService.numeroExiste(numero)),
       ],
     }),
     capacidad: this.fb.control(4, [Validators.required, Validators.min(1)]),

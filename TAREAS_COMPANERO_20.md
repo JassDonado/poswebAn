@@ -1,130 +1,212 @@
-# TAREAS COMPANERO 20% — Entrega 2 (POSWEB Angular)
+# TAREAS COMPANERO 20% — Entrega 2 (COM30)
 
-Este documento describe qué quedó listo en el **80% implementado**, cómo probar los **6 casos de verificación** de la rúbrica, y qué debe completar el compañero para su **20% pendiente**.
-
----
-
-## 1. Qué quedó listo (80% implementado en `poswebAn`, rama `master`)
-
-### Arquitectura (reglas de la rúbrica respetadas)
-- **100% Standalone Components** — sin `NgModule`.
-- **Control Flow moderno** — exclusivamente `@if`, `@else`, `@for` (con `track` obligatorio). Sin `*ngIf` ni `*ngFor`.
-- **Señales privadas en servicios** — `private _xxx = signal<...>(...)` expuestas solo con `.asReadonly()`. Los componentes no mutan señales directamente.
-- **`input()` para parámetros de ruta** — `withComponentInputBinding()` en `app.config.ts`. Sin `@Input()`.
-- **`inject()`** en lugar de constructores.
-- **Cero fugas de memoria** — sin `.subscribe()`; se usa `toSignal()` y `takeUntilDestroyed()`.
-- **Datos reales** — extraídos de `posweb.sql` del proyecto de referencia (mesas, productos, categorías, pedidos, órdenes de cocina). Sin "Lorem ipsum".
-
-### Vistas y rutas implementadas
-
-| Ruta | Componente | Descripción |
-|------|-----------|-------------|
-| `/` | redirección a `/mesas` | Inicio |
-| `/mesas` | `MesaListComponent` | Dashboard de mesas con cambio de estado (disponible/ocupada/reservada) |
-| `/cocina` | `CocinaComponent` | Tablero Kanban de comandas (pendiente → en preparación → listo) |
-| `/inventario` | `InventarioListComponent` | Listado de inventario con búsqueda reactiva y bajo stock |
-| `/inventario/nuevo` | `ProductoFormComponent` | Formulario reactivo de alta de producto |
-| `/inventario/detalle/:id` | `ProductoDetalleComponent` | Detalle de producto con `input()` y "Registro no encontrado" |
-| `/404` | `NotFoundComponent` | Vista 404 |
-| `**` | redirección a `/404` | Cualquier ruta inexistente |
-
-### Servicios (señales privadas + `.asReadonly()`)
-- `ProductoService` — `_productos`, `_categorias`, `_nextId` privados. CRUD completo, `nombreExiste()`, productos activos/bajo stock/agotados.
-- `MesaService` — `_mesas` privado. CRUD, `cambiarEstado()`, `numeroExiste()`.
-- `PedidoService` — `_pedidos`, `_ordenesCocina` privados. Órdenes de cocina con cambio de estado.
-
-### Formulario reactivo de producto (`/inventario/nuevo`)
-- `NonNullableFormBuilder` tipado con `FormControl` por campo.
-- Modelo de formulario (`ProductoFormValue`) separado del modelo de dominio (`Producto`) con mapper `mapProductoFormToProducto()`.
-- **4 validadores integrados**: `required`, `minLength(3)`, `maxLength(50)`, `min(100)`.
-- **1 validador personalizado**: `nombreProductoUnicoValidator` (nombre duplicado).
-- Mensajes de error solo cuando `control.invalid && (control.touched || control.dirty)`.
-- Botón deshabilitado con `[disabled]="formularioProducto.invalid"`.
-- Al guardar: `productoService.add()`, `form.reset()`, navegación a `/inventario`.
-- Vista previa en vivo (`ProductoCardComponent`) mientras se llena el formulario.
-
-### Búsqueda reactiva (`/inventario`)
-- `FormControl` + `valueChanges` + `debounceTime(300)` + `distinctUntilChanged()`.
-- `toSignal(..., { initialValue: '' })` sin suscripciones abiertas.
-- `computed()` que filtra productos por nombre o categoría.
-- Mensaje claro si no hay coincidencias; al borrar el texto reaparecen todos.
-
-### Pruebas y build
-- `npx ng build` ✅ compila sin errores.
-- `npx ng test --watch=false` ✅ 12 tests pasando (3 archivos spec).
-- `.gitignore` ignora `node_modules`, `dist`, `.idea`, `coverage`, etc.
+Este documento describe qué quedó listo en el **80% implementado** y qué falta para el **20% pendiente**, basado en una auditoría completa del código actual de `poswebAn`.
 
 ---
 
-## 2. Cómo probar los 6 casos de verificación
+## 1. AUDITORÍA COMPLETA — Estado actual vs. requerimientos de la rúbrica
 
-### Caso 1 — Formulario vacío tocado → mensaje de error + botón deshabilitado
-1. Ir a `/inventario/nuevo`.
-2. Hacer clic en cada campo y salir sin escribir (touched).
-3. Verificar que aparece el mensaje de error por control (`invalid && (touched || dirty)`).
-4. Verificar que el botón "Guardar producto" está deshabilitado (`[disabled]="formularioProducto.invalid"`).
+### R1 — README.md
 
-### Caso 2 — Campo numérico con `min`
-1. En "Precio", escribir un valor menor a 100 (ej. 50).
-2. Verificar error `min`: "El precio mínimo es 100 COP."
-3. Corregir a un valor ≥ 100.
-4. Verificar que el error desaparece.
-5. Lo mismo para "Stock" con valor negativo (mínimo 0).
+| Criterio | Estado | Observación |
+|----------|--------|-------------|
+| Tabla de rutas (`Ruta`, `Vista / Componente`, `Parámetro`) | ⚠️ PARCIAL | Tiene tabla, pero con las **rutas antiguas** (`/mesas`, `/mesas/nueva`, `/mesas/detalle/:id`). Las rutas actuales son diferentes. Falta actualizar. |
+| Justificación técnica Reactivo vs. Plantillas | ✅ SÍ | Líneas 77-85 de README.md. |
+| Arquitectura moderna (standalone, señales, `loadComponent`, `input()`) | ✅ SÍ | Líneas 69-75 de README.md. |
+| Comandos de ejecución | ✅ SÍ | `npm install`, `npx ng serve`, `npx ng build`, `npx ng test --watch=false`. |
 
-### Caso 3 — Validador personalizado (nombre duplicado)
-1. En "Nombre", escribir "Hamburguesa Clásica" (ya existe).
-2. Verificar mensaje: "Ese nombre de producto ya está registrado."
-3. Cambiar a un nombre único.
-4. Verificar que el error desaparece.
-
-### Caso 4 — Envío válido → agrega al listado + reset del formulario
-1. Llenar el formulario con datos válidos.
-2. Hacer clic en "Guardar producto".
-3. Verificar que el producto aparece en `/inventario` sin recargar la página.
-4. Verificar que el formulario se reinició (`form.reset()`).
-
-### Caso 5 — Búsqueda con debounce 300 ms
-1. Ir a `/inventario`.
-2. Escribir 3 caracteres rápidamente en el buscador.
-3. Verificar que el filtrado se ejecuta una sola vez, 300 ms después de la última tecla.
-4. Borrar el texto y verificar que reaparecen todos los productos.
-
-### Caso 6 — Ruta de detalle con ID inexistente y ruta 404
-1. Navegar a `/inventario/detalle/99999`.
-2. Verificar mensaje: "Registro no encontrado / El producto solicitado no existe."
-3. Navegar a `/ruta-inexistente`.
-4. Verificar la vista 404: "Página no encontrada."
+**Archivo a editar:** `README.md` (raíz del proyecto)
 
 ---
 
-## 3. Qué debe completar el compañero (20% pendiente)
+### R2 — Rutas y Navegación
 
-### A. Vista de Facturación / Reportes (`/facturacion` o `/reportes`)
-Crear un componente independiente (standalone) con:
-- Listado de facturas/pedidos facturados.
-- Totales de ventas por día.
-- Botón para generar factura desde un pedido listo.
-- Ruta: `/facturacion` o `/reportes` (a elegir por el compañero).
-- Agregar la ruta en `src/app/app.routes.ts` con `loadComponent`.
-
-### B. Actualización final del `README.md`
-El `README.md` ya tiene una versión básica. El compañero debe:
-1. Agregar la tabla de rutas completa (incluyendo `/facturacion` o `/reportes`).
-2. Agregar la justificación técnica de por qué se usó `ReactiveFormsModule` en lugar de `FormsModule` (tipado estricto, validadores escalables, separación modelo de formulario/dominio, facilidad de pruebas).
-3. Documentar la arquitectura moderna (standalone, señales privadas `.asReadonly()`, `loadComponent`, parámetros vía `input()`).
-4. Incluir comandos de ejecución: `npm install`, `npx ng serve`, `npx ng build`, `npx ng test --watch=false`.
-
-### Archivos exactos a tocar por el compañero
-
-| Archivo | Qué hacer |
-|---------|-----------|
-| `src/app/app.routes.ts` | Agregar ruta `/facturacion` o `/reportes` con `loadComponent` |
-| `src/app/features/` | Crear carpeta `facturacion/` o `reportes/` con el componente standalone |
-| `README.md` | Actualizar con tabla de rutas y justificación técnica |
+| Criterio | Estado | Archivo / Líneas |
+|----------|--------|------------------|
+| Vista listado (`/mesas` y `/inventario`) | ✅ SÍ | `app.routes.ts` líneas 5-8 y 16-19 |
+| Vista detalle con `:id` (`/inventario/detalle/:id`) | ✅ SÍ | `app.routes.ts` líneas 26-29 + `producto-detalle.component.ts` |
+| Parámetro `:id` recibido con `input()` | ✅ SÍ | `producto-detalle.component.ts` línea 36 |
+| `withComponentInputBinding()` en `app.config.ts` | ✅ SÍ | `app.config.ts` línea 8 |
+| Mensaje "Registro no encontrado" si ID inexistente | ✅ SÍ | `producto-detalle.component.ts` líneas 26-29 |
+| Vista alta (`/inventario/nuevo`) | ✅ SÍ | `app.routes.ts` líneas 21-24 |
+| Vista 404 (`/404` y `**`) | ✅ SÍ | `app.routes.ts` líneas 30-36 |
+| `loadComponent` en todas las rutas | ✅ SÍ | `app.routes.ts` todas las rutas |
+| `routerLinkActive` y `routerLinkActiveOptions` | ✅ SÍ | `sidebar-layout.component.ts` líneas 27-28 |
 
 ---
 
-## 4. Comandos git del compañero
+### R3 — Formulario de Alta de Producto
+
+| Criterio | Estado | Archivo / Líneas |
+|----------|--------|------------------|
+| `NonNullableFormBuilder` tipado, un control por campo | ✅ SÍ | `producto-form.component.ts` líneas 130-148 |
+| Modelo de formulario (`ProductoFormValue`) separado del modelo de datos (`Producto`) | ✅ SÍ | `producto.model.ts` líneas 18-25 y 7-16 |
+| Conversión explícita con `mapProductoFormToProducto()` | ✅ SÍ | `producto.model.ts` líneas 27-37 |
+| Guarda mediante servicio actualizando señal privada sin recargar | ✅ SÍ | `producto.service.ts` líneas 92-96; `producto-form.component.ts` líneas 168-184 |
+| Vista previa en vivo (`ProductoCard`) | ✅ SÍ | `producto-form.component.ts` líneas 114-116 y `producto-card.component.ts` |
+
+---
+
+### R4 — Validaciones
+
+| Criterio | Estado | Archivo / Líneas |
+|----------|--------|------------------|
+| 4 validadores integrados distintos | ✅ SÍ | `required`, `minLength(3)`, `maxLength(50)`, `min(100)` — `producto-form.component.ts` líneas 133-136, 141, 144 |
+| 1 validador propio | ✅ SÍ | `validarProductoUnico` — `producto-unico.validator.ts` |
+| Errores solo cuando `control.invalid && (touched || dirty)` | ✅ SÍ | `producto-form.component.ts` líneas 34, 60, 75 |
+| Botón deshabilitado con `[disabled]="formularioProducto.invalid"` | ✅ SÍ | `producto-form.component.ts` línea 105 |
+
+---
+
+### R5 — Búsqueda Reactiva (INVENTARIO)
+
+**✅ YA ESTÁ IMPLEMENTADA** en el archivo:
+> **`src/app/features/inventario/inventario-list.component.ts`**
+
+**Detalles de implementación:**
+
+| Requisito | Dónde está | Líneas |
+|-----------|------------|--------|
+| `FormControl` tipado con `nonNullable: true` | `inventario-list.component.ts` | Línea 89 |
+| `valueChanges` conectado | `inventario-list.component.ts` | Línea 91 |
+| `debounceTime(300)` | `inventario-list.component.ts` | Línea 92 |
+| `distinctUntilChanged()` | `inventario-list.component.ts` | Línea 92 |
+| `toSignal(..., { initialValue: '' })` | `inventario-list.component.ts` | Líneas 91-94 |
+| `computed()` que combina señal de productos + término de búsqueda | `inventario-list.component.ts` | Líneas 100-105 |
+| Filtra por nombre de producto y categoría | `inventario-list.component.ts` | Líneas 102-103 |
+| Filtra también bajo stock | `inventario-list.component.ts` | Líneas 107-112 |
+| Sin `.subscribe()` (cero fugas de memoria) | — | Usa `toSignal()` en lugar de subscribe |
+| HTML itera sobre señal filtrada con `@for` + `track` | `inventario-list.component.ts` | Líneas 35 y 63 |
+| Mensaje claro si no hay coincidencias (`@empty`) | `inventario-list.component.ts` | Líneas 44 y 77 |
+| Al borrar el texto reaparecen todas las mesas/productos | — | Porque `termino` es `''` y el `includes('')` devuelve `true` para todo |
+
+**NOTA:** La búsqueda está implementada en el listado de **inventario** (`/inventario`), no en el listado de mesas (`/mesas`). El componente `MesaListComponent` (`src/app/features/mesas/mesa-list.component.ts`) NO tiene búsqueda reactiva todavía.
+
+---
+
+### R6 y Reglas de Descuento (sin penalizaciones)
+
+| Regla | Estado | Verificación |
+|-------|--------|--------------|
+| No `NgModule` | ✅ | Todos los componentes son `standalone` |
+| No `*ngIf` | ✅ | Se usa exclusivamente `@if` / `@else` |
+| No `*ngFor` | ✅ | Se usa exclusivamente `@for` con `track` |
+| No `@Input()` | ✅ | Se usa `input()` |
+| Señales privadas en servicios (`.asReadonly()`) | ✅ | `_productos`, `_categorias`, `_mesas`, `_pedidos`, `_ordenesCocina` son `private` |
+| No mutar señales desde componentes | ✅ | Los componentes solo leen con `.asReadonly()` |
+| No suscripciones abiertas (`.subscribe()`) | ✅ | Se usa `toSignal()` |
+| `@for` siempre con `track` | ✅ | Verificado en todos los componentes |
+| Sin "Lorem ipsum" | ✅ | Todos los textos son reales del dominio POS |
+| `npx ng build` compila sin errores | ✅ | Verificado |
+| `npx ng test --watch=false` pasa en verde | ✅ | 12 tests pasando |
+
+---
+
+## 2. MAPA EXACTO DE LO QUE YA ESTÁ HECHO (80%)
+
+| Requisito | Qué está hecho | Archivo exacto |
+|-----------|---------------|----------------|
+| R2 — Rutas y navegación | 6 rutas con `loadComponent`, detalle con `input()`, 404, `routerLinkActive` | `src/app/app.routes.ts`, `src/app/app.config.ts`, `src/app/features/layout/sidebar-layout.component.ts` |
+| R2 — Vista de mesas | Listado de 12 mesas con cambio de estado | `src/app/features/mesas/mesa-list.component.ts` |
+| R2 — Vista de cocina | Tablero Kanban de órdenes (pendiente → preparación → listo) | `src/app/features/cocina/cocina.component.ts` |
+| R2 — Vista de inventario | Listado de 47 productos con stock y categorías | `src/app/features/inventario/inventario-list.component.ts` |
+| R3 — Formulario alta producto | `NonNullableFormBuilder`, 6 campos, guardar + reset + navegar | `src/app/features/productos/producto-form.component.ts` |
+| R3 — Modelo separado | `ProductoFormValue` ↔ `Producto` con mapper | `src/app/core/models/producto.model.ts` |
+| R4 — Validadores | 4 integrados + 1 personalizado (`validarProductoUnico`) | `src/app/shared/validators/producto-unico.validator.ts` |
+| R5 — Búsqueda reactiva | `FormControl` + `debounceTime(300)` + `distinctUntilChanged()` + `toSignal()` + `computed()` | `src/app/features/inventario/inventario-list.component.ts` (líneas 89-112) |
+| Servicios | Señales privadas `.asReadonly()` en 3 servicios | `src/app/core/services/producto.service.ts`, `mesa.service.ts`, `pedido.service.ts` |
+| Datos reales | 47 productos, 12 mesas, 17 pedidos, 8 categorías (del SQL de referencia) | `src/app/core/services/producto.service.ts`, `mesa.service.ts`, `pedido.service.ts` |
+| Pruebas | 12 tests pasando (3 specs) | `src/app/core/services/producto.service.spec.ts`, `mesa.service.spec.ts`, `app.spec.ts` |
+
+---
+
+## 3. LO QUE FALTA HACER (20% PENDIENTE PARA EL COMPAÑERO)
+
+### 3.1. Vista de Facturación / Reportes (OBLIGATORIO)
+
+Crear una vista independiente (standalone component) para facturación o reportes.
+
+**Ruta sugerida:** `/facturacion` o `/reportes`
+
+**Qué debe incluir:**
+- Componente standalone en `src/app/features/facturacion/` o `src/app/features/reportes/`
+- Ruta en `src/app/app.routes.ts` con `loadComponent`
+- Listado de facturas/pedidos facturados con totales
+- Botón para generar factura desde un pedido listo
+
+**Archivos exactos a crear/modificar:**
+1. Crear: `src/app/features/facturacion/facturacion.component.ts` (y `.css`)
+2. Modificar: `src/app/app.routes.ts` (agregar ruta con `loadComponent`)
+3. Opcional: Agregar enlace en el sidebar de `src/app/features/layout/sidebar-layout.component.ts`
+
+---
+
+### 3.2. Actualización de `README.md` (OBLIGATORIO)
+
+El `README.md` actual tiene la tabla de rutas con rutas **antiguas** (`/mesas`, `/mesas/nueva`, `/mesas/detalle/:id`). Debe actualizarse con las **rutas actuales** del proyecto.
+
+**Archivo a editar:** `README.md` (raíz del proyecto)
+
+**Qué debe incluir:**
+1. **Tabla de rutas actualizada** con columnas `Ruta`, `Vista / Componente`, `Parámetro`:
+
+   | Ruta | Vista / Componente | Parámetro |
+   |------|-------------------|-----------|
+   | `/mesas` | Listado de mesas (`MesaListComponent`) | Ninguno |
+   | `/cocina` | Tablero de cocina (`CocinaComponent`) | Ninguno |
+   | `/inventario` | Listado de inventario (`InventarioListComponent`) | Ninguno |
+   | `/inventario/nuevo` | Formulario alta producto (`ProductoFormComponent`) | Ninguno |
+   | `/inventario/detalle/:id` | Detalle de producto (`ProductoDetalleComponent`) | `id` del producto |
+   | `/404` | Vista no encontrada (`NotFoundComponent`) | Ninguno |
+   | `**` | Redirección a 404 | Cualquier ruta inexistente |
+   | (vacío) | Redirección a `/mesas` | Ninguno |
+
+2. **Justificación técnica:** Por qué se usó `ReactiveFormsModule` en lugar de `FormsModule` (tipado estricto, validadores escalables, separación modelo de formulario/dominio, facilidad de pruebas).
+
+3. **Arquitectura moderna:** Standalone components, señales privadas con `.asReadonly()`, `loadComponent`, parámetros vía `input()`.
+
+4. **Comandos de ejecución:** `npm install`, `npx ng serve`, `npx ng build`, `npx ng test --watch=false`.
+
+---
+
+### 3.3. (Opcional) Búsqueda reactiva en el listado de mesas
+
+La búsqueda reactiva (R5) ya está implementada en `/inventario`. Si se desea, también se puede agregar al listado de mesas (`/mesas`) en:
+> `src/app/features/mesas/mesa-list.component.ts`
+
+---
+
+## 4. GUÍA RÁPIDA DE PRUEBAS Y GIT
+
+### 4.1. Cómo verificar los 6 casos de prueba de la rúbrica
+
+Ejecutar en la terminal:
+```bash
+cd C:\Users\USER\Desktop\entrega2_posweb\poswebAn
+npx ng serve
+```
+Luego abrir **http://localhost:4200/**
+
+| Caso | Qué probar en el navegador |
+|------|---------------------------|
+| 1. Formulario vacío tocado → error + botón deshabilitado | Ir a `/inventario/nuevo`, hacer clic en cada campo sin escribir, verificar que aparecen mensajes de error y el botón "Guardar producto" está deshabilitado |
+| 2. Campo numérico con `min` | En "Precio" escribir valor < 100 → error "El precio mínimo es 100 COP". Corregir a ≥100 → error desaparece. Lo mismo para "Stock" con valor negativo |
+| 3. Validador personalizado (nombre duplicado) | En "Nombre" escribir "Hamburguesa Clásica" → error "Ese nombre de producto ya está registrado". Cambiar a nombre único → error desaparece |
+| 4. Envío válido → agrega sin recargar + `reset()` | Llenar formulario válido, hacer clic "Guardar producto", verificar que aparece en `/inventario` y el formulario se reinició |
+| 5. Debounce 300 ms en búsqueda | Ir a `/inventario`, escribir 3 caracteres rápido, verificar que filtra una sola vez 300ms después de la última tecla. Borrar texto → reaparecen todos |
+| 6. Detalle ID inexistente / 404 | Ir a `/inventario/detalle/99999` → "Registro no encontrado". Ir a `/ruta-inexistente` → vista 404 |
+
+### 4.2. Comandos de Build y Tests
+
+```bash
+# Compilar para producción (debe compilar sin errores)
+npx ng build
+
+# Ejecutar pruebas unitarias (debe pasar en verde)
+npx ng test --watch=false
+```
+
+### 4.3. Comandos Git para el compañero
 
 Desde la carpeta `poswebAn`, en la rama `master`:
 
@@ -132,25 +214,39 @@ Desde la carpeta `poswebAn`, en la rama `master`:
 # Verificar que el remoto apunta únicamente a poswebAn.git
 git remote -v
 
-# Agregar los archivos del 20%
-git add <archivos-modificados>
-git commit -m "feat: add facturacion/reportes view (20%)"
-git add README.md
-git commit -m "docs: finalize README for entrega 2"
+# Agregar los archivos creados/modificados para el 20%
+git add <archivos-modificados-o-creados>
 
-# Subir a master (revisar antes de ejecutar)
+# Commit 1: Vista de facturación/reportes
+git commit -m "feat: add facturacion/reportes view (20%)"
+
+# Commit 2: Actualización de README
+git add README.md
+git commit -m "docs: update README with current routes and reactive form justification"
+
+# Subir a master (REVISAR ANTES DE EJECUTAR)
 git push origin master
 ```
 
-> **Nota:** No hacer `git push` hasta revisar los cambios localmente con `npx ng build` y `npx ng test --watch=false`.
+**Verificar que aparece en el historial:**
+```bash
+git shortlog -sn
+```
+
+> **Nota importante:** No hacer `git push` hasta revisar localmente con `npx ng build` y `npx ng test --watch=false`. Todo el código debe compilar y los tests deben pasar antes de subir.
 
 ---
 
-## 5. Comandos de ejecución del proyecto
+## 5. RESUMEN EJECUTIVO
 
-```bash
-npm install
-npx ng serve          # http://localhost:4200/
-npx ng build
-npx ng test --watch=false
-```
+| Estado | Detalle |
+|--------|---------|
+| Build | ✅ `npx ng build` compila sin errores |
+| Tests | ✅ 12 tests pasando (3 archivos spec) |
+| R1 (README) | ⚠️ Necesita actualizar tabla de rutas (rutas antiguas) |
+| R2 (Rutas) | ✅ Completo (listado, detalle, alta, 404, `loadComponent`, `input()`) |
+| R3 (Formulario alta) | ✅ Completo (Reactivo, `NonNullableFormBuilder`, modelo separado, `reset()`) |
+| R4 (Validaciones) | ✅ Completo (4 integrados + 1 propio, errores con `touched/dirty`, botón deshabilitado) |
+| R5 (Búsqueda reactiva) | ✅ Completo en `/inventario` (`inventario-list.component.ts` líneas 89-112) |
+| Reglas de descuento | ✅ Sin violaciones (sin `NgModule`, `*ngIf`, `*ngFor`, `@Input()`, `.subscribe()`, "Lorem ipsum") |
+| 20% pendiente | Vista de facturación/reportes + actualización de `README.md` |

@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { to: '/cocina', label: 'Cocina', icon: '👨‍🍳' },
   { to: '/inventario', label: 'Inventario', icon: '📦' },
   { to: '/inventario/nuevo', label: 'Nuevo producto', icon: '➕' },
+  { to: '/facturacion', label: 'Facturación', icon: '🧾' },
 ];
 
 @Component({

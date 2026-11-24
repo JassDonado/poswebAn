@@ -28,6 +28,11 @@ export const routes: Routes = [
       import('./features/productos/producto-detalle.component').then((m) => m.ProductoDetalleComponent),
   },
   {
+    path: 'facturacion',
+    loadComponent: () =>
+      import('./features/facturacion/facturacion.component').then((m) => m.FacturacionComponent),
+  },
+  {
     path: '404',
     loadComponent: () =>
       import('./shared/not-found.component').then((m) => m.NotFoundComponent),

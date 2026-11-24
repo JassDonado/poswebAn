@@ -91,10 +91,10 @@ const PEDIDOS_SEED: Pedido[] = [
   { id: 10, estado: 'FACTURADO', nota: null, total: 32000, clienteId: 2, mesaId: 10, usuarioId: 2, detalles: DETALLES_SEED[10], clienteNombre: 'Pedro Pérez', mesaNumero: '10' },
   { id: 12, estado: 'FACTURADO', nota: null, total: 75500, clienteId: null, mesaId: 1, usuarioId: 1, detalles: DETALLES_SEED[12], mesaNumero: '1' },
   { id: 13, estado: 'FACTURADO', nota: 'hamburguesa sin lechuga', total: 36500, clienteId: 7, mesaId: 1, usuarioId: 2, detalles: DETALLES_SEED[13], clienteNombre: 'María Rodríguez', mesaNumero: '1' },
-  { id: 14, estado: 'FACTURADO', nota: null, total: 16500, clienteId: null, mesaId: null, usuarioId: 2, detalles: DETALLES_SEED[14] },
-  { id: 15, estado: 'FACTURADO', nota: null, total: 16500, clienteId: null, mesaId: 6, usuarioId: 3, detalles: DETALLES_SEED[15], mesaNumero: '6' },
-  { id: 16, estado: 'FACTURADO', nota: null, total: 74000, clienteId: 1, mesaId: 12, usuarioId: 1, detalles: DETALLES_SEED[16], clienteNombre: 'Ana María López', mesaNumero: '12' },
-  { id: 17, estado: 'FACTURADO', nota: null, total: 34500, clienteId: 8, mesaId: 2, usuarioId: 2, detalles: DETALLES_SEED[17], clienteNombre: 'Mateo Chamorro', mesaNumero: '2' },
+  { id: 14, estado: 'LISTO', nota: null, total: 16500, clienteId: null, mesaId: null, usuarioId: 2, detalles: DETALLES_SEED[14] },
+  { id: 15, estado: 'LISTO', nota: null, total: 16500, clienteId: null, mesaId: 6, usuarioId: 3, detalles: DETALLES_SEED[15], mesaNumero: '6' },
+  { id: 16, estado: 'LISTO', nota: null, total: 74000, clienteId: 1, mesaId: 12, usuarioId: 1, detalles: DETALLES_SEED[16], clienteNombre: 'Ana María López', mesaNumero: '12' },
+  { id: 17, estado: 'LISTO', nota: null, total: 34500, clienteId: 8, mesaId: 2, usuarioId: 2, detalles: DETALLES_SEED[17], clienteNombre: 'Mateo Chamorro', mesaNumero: '2' },
 ];
 
 const ORDENES_COCINA_SEED: OrdenCocina[] = [
@@ -146,11 +146,32 @@ export class PedidoService {
     this._ordenesCocina.update((ordenes) =>
       ordenes.map((o) => (o.id === id ? { ...o, estado } : o)),
     );
+
+    const orden = this._ordenesCocina().find((o) => o.id === id);
+    if (!orden) return;
+
+    const estadoPedido: EstadoPedido =
+      estado === 'CANCELADO' ? 'CANCELADO' : estado;
+    this._pedidos.update((pedidos) =>
+      pedidos.map((pedido) =>
+        pedido.id === orden.pedidoId ? { ...pedido, estado: estadoPedido } : pedido,
+      ),
+    );
   }
 
   cancelarOrdenCocina(id: number): void {
-    this._ordenesCocina.update((ordenes) =>
-      ordenes.map((o) => (o.id === id ? { ...o, estado: 'CANCELADO' } : o)),
+    this.cambiarEstadoOrdenCocina(id, 'CANCELADO');
+  }
+
+  facturarPedido(id: number): boolean {
+    const pedido = this._pedidos().find((item) => item.id === id);
+    if (!pedido || pedido.estado !== 'LISTO') return false;
+
+    this._pedidos.update((pedidos) =>
+      pedidos.map((item) =>
+        item.id === id ? { ...item, estado: 'FACTURADO' } : item,
+      ),
     );
+    return true;
   }
 }

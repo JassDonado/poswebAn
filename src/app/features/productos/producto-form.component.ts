@@ -10,7 +10,7 @@ import { CurrencyPipe } from '@angular/common';
 import { Producto, ProductoFormValue, mapProductoFormToProducto } from '../../core/models/producto.model';
 import { ProductoService } from '../../core/services/producto.service';
 import { ProductoCardComponent } from './producto-card.component';
-import { nombreProductoUnicoValidator } from '../../shared/validators/nombre-producto-unico.validator';
+import { validarProductoUnico } from '../../shared/validators/producto-unico.validator';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,7 +42,7 @@ import { nombreProductoUnicoValidator } from '../../shared/validators/nombre-pro
                   @if (formularioProducto.get('nombre')!.hasError('maxlength')) {
                     <span>Usa máximo 50 caracteres.</span>
                   }
-                  @if (formularioProducto.get('nombre')!.hasError('nombreProductoUnico')) {
+                  @if (formularioProducto.get('nombre')!.hasError('productoUnico')) {
                     <span>Ese nombre de producto ya está registrado.</span>
                   }
                 </div>
@@ -133,7 +133,7 @@ export class ProductoFormComponent {
         Validators.required,
         Validators.minLength(3),
         Validators.maxLength(50),
-        nombreProductoUnicoValidator(this.productoService),
+        validarProductoUnico(this.productoService),
       ],
     }),
     descripcion: this.fb.control(''),

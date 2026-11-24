@@ -1,41 +1,113 @@
 .mesa-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
 }
 
 .mesa-card {
-  border: 1px solid #e5e4e7;
-  border-radius: 12px;
-  padding: 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px;
   text-align: center;
-  background: #f4f3ec;
-  transition: transform 0.15s;
+  background: #fff;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  cursor: default;
 }
 
 .mesa-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+}
+
+.mesa-card.mesa-disponible {
+  border-color: #10b981;
+  background: #f0fdf4;
 }
 
 .mesa-card.mesa-ocupada {
-  border-color: rgba(170, 59, 255, 0.5);
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.mesa-card.mesa-reservada {
+  border-color: #f59e0b;
+  background: #fffbeb;
 }
 
 .mesa-numero {
-  font-size: 20px;
-  font-weight: 700;
-  color: #08060d;
-  margin-bottom: 4px;
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 8px;
 }
 
 .mesa-capacidad {
   font-size: 13px;
-  color: #6b6375;
-  margin-bottom: 12px;
+  color: #64748b;
+  margin-bottom: 16px;
 }
 
 .mesa-acciones {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-sm {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.btn-ghost:hover {
+  background: #f1f5f9;
+}
+
+.btn-danger {
+  background: #dc2626;
+  color: #fff;
+  border-color: #dc2626;
+}
+
+.empty {
+  color: #64748b;
+  font-size: 15px;
+  padding: 24px 0;
+  text-align: center;
 }

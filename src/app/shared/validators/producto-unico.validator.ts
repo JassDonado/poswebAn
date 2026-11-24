@@ -1,7 +1,7 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { ProductoService } from '../../core/services/producto.service';
 
-export function nombreProductoUnicoValidator(
+export function validarProductoUnico(
   productoService: ProductoService,
 ): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -10,7 +10,7 @@ export function nombreProductoUnicoValidator(
       return null;
     }
     return productoService.nombreExiste(nombre)
-      ? { nombreProductoUnico: true }
+      ? { productoUnico: true }
       : null;
   };
 }

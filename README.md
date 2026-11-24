@@ -5,10 +5,13 @@ Sistema de control de mesas para restaurante (POS). Aplicación Angular moderna 
 ## Tabla de rutas
 
 | Ruta | Vista / Componente | Parámetro |
-|---|---|---|
+|------|-------------------|-----------|
 | `/mesas` | Listado de mesas (`MesaListComponent`) | Ninguno |
-| `/mesas/nueva` | Formulario de alta (`MesaFormComponent`) | Ninguno |
-| `/mesas/detalle/:id` | Detalle de mesa (`MesaDetailComponent`) | `id` de la mesa |
+| `/cocina` | Tablero de cocina (`CocinaComponent`) | Ninguno |
+| `/inventario` | Listado de inventario (`InventarioListComponent`) | Ninguno |
+| `/inventario/nuevo` | Formulario de alta de producto (`ProductoFormComponent`) | Ninguno |
+| `/inventario/detalle/:id` | Detalle de producto (`ProductoDetalleComponent`) | `id` del producto |
+| `/facturacion` | Facturación y reportes (`FacturacionComponent`) | Ninguno |
 | `/404` | Vista no encontrada (`NotFoundComponent`) | Ninguno |
 | `**` | Redirección a 404 | Cualquier ruta inexistente |
 | (vacío) | Redirección a `/mesas` | Ninguno |
@@ -69,18 +72,18 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Arquitectura moderna
 
 - **Standalone components:** la aplicación no usa `NgModule`; cada componente declara sus propias dependencias en `imports`.
-- **Señales privadas con `.asReadonly()`:** el `MesaService` mantiene su estado en una `signal` privada (`_mesas`) y lo expuesto solo de lectura mediante `asReadonly()`, impidiendo que los componentes lo muten directamente.
+- **Señales privadas con `.asReadonly()`:** los servicios mantienen su estado en señales privadas y exponen solo valores de lectura mediante `asReadonly()`, impidiendo que los componentes muten el estado directamente.
 - **Rutas con `loadComponent` y parámetros vía `input()`:** las rutas usan carga diferida (lazy loading) con `loadComponent`, y el parámetro `id` se inyecta en el componente de detalle con `input<string>()` (vía `withComponentInputBinding`).
-- **Búsqueda reactiva (RF-E2-08):** el listado incluye un campo de búsqueda con `FormControl` tipado, conectado mediante `debounceTime(300)` y `distinctUntilChanged()`, convertido a señal con `toSignal()` (sin suscripciones abiertas) y combinado en un `computed()` que filtra las mesas por número y estado.
-- **Formulario reactivo tipado:** el alta de mesas usa `ReactiveFormsModule` con `NonNullableFormBuilder`, validadores síncronos y un validador personalizado de número duplicado.
+- **Búsqueda reactiva:** el listado de inventario incluye un `FormControl` tipado conectado mediante `debounceTime(300)`, `distinctUntilChanged()` y `toSignal()`; un `computed()` filtra por nombre, categoría y bajo stock sin suscripciones abiertas.
+- **Formulario reactivo tipado:** el alta de productos usa `ReactiveFormsModule` con `NonNullableFormBuilder`, validadores integrados y un validador personalizado de nombre duplicado.
 
 ## Justificación técnica: Formulario Reactivo vs Formulario basado en plantillas
 
-Para el alta de mesas se utilizó `ReactiveFormsModule` en lugar de `FormsModule` por las siguientes razones:
+Para los formularios se utilizó `ReactiveFormsModule` en lugar de `FormsModule` por las siguientes razones:
 
 1. **Tipado estricto de los controles:** con `NonNullableFormBuilder` y `FormControl<string | number>` tipados, el valor del formulario se conoce en tiempo de compilación, evitando errores de tipo en tiempo de ejecución.
-2. **Escalabilidad de validadores:** es sencillo añadir validadores síncronos integrados (`required`, `min`, `minLength`, `pattern`) y validadores personalizados (como `uniqueMesaNumberValidator`) sin ensuciar el template.
-3. **Separación entre modelo de formulario y modelo de dominio:** el formulario maneja `MesaFormValue` mientras el servicio trabaja con la entidad `Mesa`; la conversión es explícita (`mapMesaFormToEntity`), lo que mantiene el dominio limpio.
+2. **Escalabilidad de validadores:** es sencillo añadir validadores síncronos integrados (`required`, `min`, `minLength`, `maxLength`) y validadores personalizados (`validarProductoUnico`) sin ensuciar el template.
+3. **Separación entre modelo de formulario y modelo de dominio:** el formulario maneja `ProductoFormValue` mientras el servicio trabaja con la entidad `Producto`; la conversión es explícita (`mapProductoFormToProducto`), lo que mantiene el dominio limpio.
 4. **Facilidad de pruebas:** el estado y las validaciones del formulario se pueden verificar directamente en pruebas unitarias sin renderizar el DOM ni depender de directivas de plantilla.
 5. **Control explícito del estado de validación y del envío:** se puede deshabilitar el botón con `[disabled]="form.invalid"` y mostrar mensajes de error solo cuando el control está `invalid && (touched || dirty)`.
 
